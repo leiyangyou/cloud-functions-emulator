@@ -16,7 +16,7 @@
 'use strict';
 
 const _ = require('lodash');
-const google = require('googleapis');
+const google = require('googleapis').google;
 const net = require('net');
 const path = require('path');
 const url = require('url');
@@ -31,11 +31,11 @@ class RestClient extends Client {
     return this.getService()
       .then((functionsService) => {
         return new Promise((resolve, reject) => {
-          _.get(functionsService, method).call(functionsService, params, (err, body, response) => {
+          return _.get(functionsService, method).call(functionsService, params, (err, response) => {
             if (err) {
               reject(err);
             } else {
-              resolve([body, response]);
+              resolve([response.data, response]);
             }
           });
         });
@@ -101,22 +101,14 @@ class RestClient extends Client {
   }
 
   getService () {
-    return new Promise((resolve, reject) => {
-      const discoveryPath = '$discovery/rest';
-      const parts = url.parse(this.getUrl(discoveryPath));
-      const discoveryUrl = url.format(_.merge(parts, {
-        pathname: discoveryPath,
-        search: '?version=v1'
-      }));
+    const discoveryPath = '$discovery/rest';
+    const parts = url.parse(this.getUrl(discoveryPath));
+    const discoveryUrl = url.format(_.merge(parts, {
+      pathname: discoveryPath,
+      search: '?version=v1'
+    }));
 
-      google.discoverAPI(discoveryUrl, (err, functions) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(functions);
-        }
-      });
-    });
+    return google.discoverAPI(discoveryUrl)
   }
 
   getUrl (pathname) {
