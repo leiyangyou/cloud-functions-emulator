@@ -182,7 +182,7 @@ function main () {
     if (localdir && !message.debug && message.watch) {
       const watcher = chokidar.watch(localdir, {
         ignoreInitial: true,
-        persistent: false,
+        persistent: true,
         ignored: message.watchIgnore
       });
 
@@ -192,6 +192,7 @@ function main () {
         });
         server.close(() => {
           console.log(`Worker for ${name} closed due to file changes.`);
+          watcher.close()
           process.exit();
         });
       };
